@@ -6,8 +6,8 @@
 # rewrites exactly those lines, so a generated project takes its own identity in one
 # recorded operation -- and policies/identity refuses any copy that lives anywhere else.
 contract = "project-identity/v1"
-name = "cs1090a-recsys"
-repository = "https://github.com/fustaomni/cs1090a-recsys"
+name = "cs1090a-volatility"
+repository = "https://github.com/fustaomni/cs1090a-volatility"
 
 # Paths whose identity is derived, quoted verbatim, or this repository's own history.
 exempt = [

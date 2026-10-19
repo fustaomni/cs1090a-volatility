@@ -3,7 +3,7 @@
 # Removed from cscie103's: Presidio, spaCy and Copier (features not yet planned here), and
 # the notebook rules (no notebooks yet). Each returns only with the step that needs it.
 [project]
-name = "cs1090a-recsys"
+name = "cs1090a-volatility"
 version = "0.1.0"
 description = "Offline prediction of the next recorded MovieLens 1M rating, governed as code and data"
 # PINNED EXACTLY, AS cscie103 PINS IT. uv installs this interpreter into the project's own
