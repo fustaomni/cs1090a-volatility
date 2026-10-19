@@ -1,0 +1,31 @@
+# contracts/task-effects.toml
+# The tasks that only observe, verify or report (D.149). They take no lock and may run
+# alongside anything. Every task NOT listed here is mutating: the gateway runs it only while
+# it holds that task's lock in its worktree, and refuses a second concurrent run.
+
+contract = "task-effects/v1"
+read_only = [
+    "audit:assertions",
+    "audit:evidence",
+    "audit:exemptions",
+    "audit:suppressions",
+    "audit:problems",
+    "audit:models",
+    "audit:workflows",
+    "check",
+    "check:ci",
+    "check:offline",
+    "check:ruleset",
+    "lint",
+    "mutation:check",
+    "plan:step",
+    "plan:trace",
+    "plan:trailers",
+    "repo:history",
+    "repo:state",
+    "runs:verify",
+    "start:check",
+    "status",
+    "test",
+    "types",
+]

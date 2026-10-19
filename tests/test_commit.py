@@ -1,0 +1,202 @@
+# tests/test_commit.py
+"""Committing is a project operation, and it was never captured.
+
+WHAT THIS FIXES. Every commit in this repository has been made by hand as
+`git commit --file /tmp/commit-msg.txt --no-verify`. Two defects in one habit:
+
+    NOT A TASK      mise.toml states that every project operation is a task,
+                    "not a remembered command, not a paste from scrollback".
+                    The single most frequent operation here was the exception.
+
+    --no-verify     the pre-commit hooks -- start:check, fmt, lint -- have been
+                    skipped on EVERY commit. The gate was only ever reached at
+                    push time, so a protected-branch commit or an unformatted
+                    file was caught late or not at all.
+
+NAMED PATHS, NEVER -A. `git add -A` swept a stray zero-byte file into a commit
+earlier in this project; the hygiene gate exists because of it. Naming the paths
+makes what is committed a decision rather than whatever the tree happened to
+hold.
+
+THE OUTCOME IS AN ENVELOPE. This is the first consumer of command-outcome/v1:
+a refusal carries a machine code and exits 2, a failure exits 1, and a caller
+branches without reading prose.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from command_outcome import CommandOutcome
+from commit import (
+    CONVENTIONAL_SUBJECT,
+    PROTECTED,
+    current_branch,
+    main,
+    plan_commit,
+    run_git,
+)
+from nonvacuous import nonempty
+
+
+def plan(
+    *,
+    branch: str = "feature/a-command-reports-as-data",
+    message: str = "feat(contracts): a command reports as data",
+    paths: tuple[str, ...] = ("scripts/command_outcome.py",),
+) -> CommandOutcome:
+    """A valid commit plan, with the field under test overridden."""
+    return plan_commit(branch=branch, message=message, paths=paths)
+
+
+# --- the protected-branch guard -------------------------------------------------
+
+
+def test_a_protected_branch_is_refused() -> None:
+    """GitFlow: work happens on a feature branch cut from origin/develop.
+
+    start:check already refuses this, and --no-verify meant it never ran.
+    """
+    for branch in nonempty(sorted(PROTECTED)):
+        outcome = plan(branch=branch)
+        assert outcome.outcome == "refused"
+        assert outcome.code == "protected_branch"
+        assert branch in outcome.message
+
+
+def test_a_feature_branch_is_allowed() -> None:
+    assert plan().outcome == "success"
+
+
+def test_the_root_commit_names_its_branch() -> None:
+    """Before its first commit, HEAD names a branch that rev-parse cannot resolve (A.5)."""
+
+    def unborn(argv: list[str]) -> tuple[int, str]:
+        if argv[:1] == ["symbolic-ref"]:
+            return 0, "main"
+        return 128, "fatal: ambiguous argument 'HEAD'"
+
+    assert current_branch(unborn) == "main"
+
+
+def test_the_root_commit_on_a_protected_branch_is_allowed() -> None:
+    """The one exemption start:check has: main with no commit yet, and only then (A.5)."""
+    root = plan_commit(
+        branch="main",
+        message="chore(founding): root",
+        paths=("scripts/commit.py",),
+        root_commit=True,
+    )
+    assert root.outcome == "success", root
+    assert plan(branch="main").code == "protected_branch"
+
+
+def test_the_root_commit_is_made_on_main_through_the_task(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The boundary reads the unborn HEAD and the branch; the outcome names main (A.5)."""
+
+    def unborn(argv: list[str]) -> tuple[int, str]:
+        if argv[:1] == ["symbolic-ref"]:
+            return 0, "main"
+        if argv[:2] == ["diff", "--cached"]:
+            return 1, ""
+        return (1, "") if argv[:3] == ["rev-parse", "--quiet", "--verify"] else (0, "")
+
+    argv = ["--message", "chore(founding): root", "--path", "scripts/commit.py"]
+    assert main(argv, git=unborn) == 0
+    outcome = json.loads(capsys.readouterr().out)
+    assert (outcome["code"], outcome["message"]) == ("committed", "committed 1 path(s) on main")
+
+
+# --- the message ----------------------------------------------------------------
+
+
+def test_a_conventional_subject_is_required() -> None:
+    """The repository's history is conventional commits throughout.
+
+    A subject that does not parse is refused BEFORE anything is staged, so a
+    rejected message never leaves a half-staged index behind.
+    """
+    for subject in ("added a thing", "FEAT: shouting", "feat no scope colon", ""):
+        outcome = plan(message=subject)
+        assert outcome.outcome == "refused"
+        assert outcome.code == "unconventional_subject"
+
+
+def test_every_conventional_type_is_accepted() -> None:
+    for kind in ("feat", "fix", "refactor", "test", "docs", "chore", "ci", "build", "perf"):
+        assert plan(message=f"{kind}(scope): a subject").outcome == "success"
+
+
+def test_a_scope_is_optional() -> None:
+    assert plan(message="fix: a subject with no scope").outcome == "success"
+
+
+def test_the_subject_pattern_is_anchored() -> None:
+    """An unanchored pattern would accept prose that merely CONTAINS a type."""
+    assert CONVENTIONAL_SUBJECT.match("feat(x): y") is not None
+    assert CONVENTIONAL_SUBJECT.match("this is not a feat(x): subject") is None
+
+
+# --- the paths ------------------------------------------------------------------
+
+
+def test_no_paths_is_refused() -> None:
+    """Committing nothing and reporting success is the shape this repository
+    keeps removing: a command that claims an effect it did not have."""
+    outcome = plan(paths=())
+    assert outcome.outcome == "refused"
+    assert outcome.code == "no_paths_named"
+
+
+def test_a_path_that_does_not_exist_is_refused(tmp_path: Path) -> None:
+    """A mistyped path would otherwise stage nothing and commit nothing, while
+    the command reported success."""
+    outcome = plan_commit(
+        branch="feature/x",
+        message="feat(x): y",
+        paths=("scripts/does_not_exist.py",),
+        root=tmp_path,
+    )
+    assert outcome.outcome == "refused"
+    assert outcome.code == "path_not_found"
+    assert "does_not_exist" in outcome.message
+
+
+def test_the_plan_names_every_path_it_would_stage() -> None:
+    """The data carries what the command WOULD do, so a caller can show it
+    before it happens."""
+    outcome = plan(paths=("scripts/command_outcome.py", "tests/test_command_outcome.py"))
+    assert outcome.data["paths"] == [
+        "scripts/command_outcome.py",
+        "tests/test_command_outcome.py",
+    ]
+
+
+# --- the envelope ---------------------------------------------------------------
+
+
+def test_the_plan_is_an_envelope() -> None:
+    outcome = plan()
+    assert outcome.contract == "command-outcome/v1"
+    assert outcome.command == "commit"
+
+
+def test_a_refusal_exits_two_and_a_success_exits_zero() -> None:
+    """A caller branches on the exit code without parsing a word, and a refusal
+    is distinguishable from a crash."""
+    assert plan().exit_code == 0
+    assert plan(branch="develop").exit_code == 2
+
+
+def test_a_refusal_on_stdout_is_not_lost(tmp_path: Path) -> None:
+    """git prints some refusals -- "nothing to commit" among them -- on stdout (A.12)."""
+    before, after = tmp_path / "a", tmp_path / "b"
+    before.write_text("a\n", encoding="utf-8")
+    after.write_text("b\n", encoding="utf-8")
+    code, text = run_git(["diff", "--no-index", "--exit-code", str(before), str(after)])
+    assert code == 1 and "+b" in text, repr(text)
