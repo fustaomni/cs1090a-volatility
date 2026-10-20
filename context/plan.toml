@@ -15,3 +15,13 @@ done_when = [
   { kind = "task", name = "identity:set" },
   { kind = "task", name = "plan:init" },
 ]
+[[steps]]
+id = "A.2"
+title = "The lock names this project, as its identity does"
+thread = "A"
+depends_on = ["A.1"]
+because = { "A.1" = "the project took its identity after generation, and its lock kept the template's name" }
+done_when = [
+  { kind = "task", name = "setup" },
+  { kind = "task", name = "check" },
+]
