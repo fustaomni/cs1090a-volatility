@@ -22,6 +22,18 @@ thread = "A"
 depends_on = ["A.1"]
 because = { "A.1" = "the project took its identity after generation, and its lock kept the template's name" }
 done_when = [
+  { kind = "proof", test = "tests/integration/test_repository_lock.py::test_this_repositorys_lock_matches_its_project" },
   { kind = "task", name = "setup" },
+  { kind = "task", name = "check" },
+]
+[[steps]]
+id = "A.3"
+title = "The project takes the platform template forward, without the template's own port history"
+thread = "A"
+depends_on = ["A.2"]
+because = { "A.2" = "the lock named this project first, so setup passes before the template moves" }
+done_when = [
+  { kind = "proof", test = "tests/test_template_identity_trailer.py::test_the_identity_commit_names_step_a1" },
+  { kind = "proof", test = "tests/test_lock.py::test_a_lock_naming_another_project_is_refused" },
   { kind = "task", name = "check" },
 ]
