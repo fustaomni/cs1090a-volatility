@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.12.3"
 
 [options]
@@ -165,7 +165,7 @@ wheels = [
 ]
 
 [[package]]
-name = "cs1090a-recsys"
+name = "cs1090a-volatility"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -3,4 +3,6 @@
 contract = "id-ledger/v1"
 issued = [
   { id = "A.1", first_title = "The project is generated from the platform template" },
+  { id = "A.2", first_title = "The lock names this project, as its identity does" },
+  { id = "A.3", first_title = "The project takes the platform template forward, without the template's own port history" },
 ]

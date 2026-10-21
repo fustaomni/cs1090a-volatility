@@ -3,7 +3,13 @@
 contract = "plan-trace/v1"
 sources = [
   { id = "TEMPLATE", title = "the platform template this project was generated from", locator = ".copier-answers.yml" },
+  { id = "SESSION", title = "the sessions that bootstrap this project from its template", locator = "claude.ai conversation of 2026-10-20, recsys branch hygiene and the volatility bootstrap (transcript journal)" },
+  { id = "HISTORY", title = "this project's own published history", locator = "git log origin/develop" },
 ]
 candidates = [
   { source = "TEMPLATE", ref = "day one", text = "its own plan, from day one", maps_to = ["A.1"] },
+  { source = "SESSION", ref = "2026-10-20 the day-one plan and identity", text = "At the first worktree the day-one plan, written at generation, and the identity, taken in its own commit, were both present, so plan:init was not needed.", maps_to = ["A.1"] },
+  { source = "SESSION", ref = "2026-10-20 the first worktree of this project", text = "worktree:add's setup refused a fresh worktree: uv sync --locked found uv.lock out of date. The project was generated before the template made uv.lock an identity slot (its A.129), so the lock's root package still named cs1090a-recsys while pyproject.toml named cs1090a-volatility. uv lock re-resolved only the root package, from cs1090a-recsys to cs1090a-volatility, and moved no pinned version.", maps_to = ["A.2"] },
+  { source = "SESSION", ref = "2026-10-20 the template update and its port history", text = "check after template:update to 86da18e refused two things: test_provenance judged the template's own port record, which every generated project had received, and the matrix found the identity commit untraced. The template fixed both at their source (its A.123, A.145) and added the lock proof this project's A.2 needed (its A.146). This step takes the template to that commit and removes the port record, its patches and their two proofs, which describe the template, not this project.", maps_to = ["A.3"] },
+  { source = "HISTORY", ref = "bb8df6461", text = "chore: take the project identity", maps_to = ["A.1"] },
 ]
