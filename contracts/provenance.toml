@@ -2,6 +2,7 @@
 # EVERY FILE PORTED FROM cscie103-data-engineering, at the commit it was read, with the
 # SHA-256 of the bytes ported. A later diff against these digests shows exactly what this
 # repository changed; mirrored, not reinvented, is then checkable rather than claimed.
+# An entry naming its own commit was read there; any other was read at the commit below (A.136).
 contract = "provenance/v1"
 source = "https://github.com/ltphongssvn/cscie103-data-engineering"
 commit = "58af9d32a9972d6abb5a18acd94ee1235843da66"
@@ -105,6 +106,12 @@ sha256 = "35de7db337fc9e191c6bc6f6fc2b5b660e075bede2ec5caab5e3f36a22a57aa2"
 [[files]]
 path = "scripts/plan_edit.py"
 sha256 = "b52e795a1ba2e6aaff5bc3834325f9e82d7ec693b04f6c4fdbca2ad81a4be4ea"
+
+[[adapted]]
+path = "scripts/plan_edit.py"
+reason = "every verb reads its spec through one reader, as plan:retract alone did: an invalid spec is refused as spec_invalid and an unreadable or unparseable one as spec_unreadable, never a traceback, and every refusal names each field (A.128)"
+patch = "contracts/vendor-patches/scripts/plan_edit.py.patch"
+sha256 = "75c50e5fa7a4625dead6a82218111fa38e252c627b651980ad7ec0df0c4f1b1a"
 
 [[files]]
 path = "scripts/plan_files.py"
@@ -532,9 +539,9 @@ sha256 = "fa7e99480e9c10832ce0c93b9a74fd82d741846bf1c94a8ce2a4544e6e5e005d"
 
 [[adapted]]
 path = "scripts/worktree.py"
-reason = "cut from an optional base with --no-track; trusted through machine_trust; -z listings through gitenv.git_bytes; A.93; one _trust helper serves a new worktree and a refresh that rewrote mise.toml, which is re-trusted or fails the refresh; A.122"
+reason = "cut from an optional base with --no-track; trusted through machine_trust; -z listings through gitenv.git_bytes; A.93; one _trust helper serves a new worktree and a refresh that rewrote mise.toml, which is re-trusted or fails the refresh; A.122; a branch is deleted only once origin/develop contains it, and a kept branch sends the reader to branches:retire, never git branch -D, as cscie103 D.229 and D.228 do; A.138; a present worktree whose branch is already gone is reported so, as an absent one is; A.139"
 patch = "contracts/vendor-patches/scripts/worktree.py.patch"
-sha256 = "3b83e0c3e10a4afd5aa79a55363d13dac368fee3b6e60b61304a1400d3280644"
+sha256 = "cc301e666b03bfa0d4f193f2e9c898a720919eafebae34c382d54112fa1cdd1b"
 
 [[files]]
 path = "policies/machine/setup/setup_env.rego"
@@ -794,7 +801,7 @@ sha256 = "ef7be5b261ea880e63a6e94ed7b93c5f1839e401fb9c3e4f2508b370561bdb7a"
 path = "contracts/problems.toml"
 reason = "cscie103's header only: the entries are this repository's own declared codes, written by problems:register, since cscie103's are codes no policy here declares (A.108)"
 patch = "contracts/vendor-patches/contracts/problems.toml.patch"
-sha256 = "06647b1c1833f781879c7514bace85687155533dd8156d9462cae9bab112f0e3"
+sha256 = "3b11ce07bb59db874ab56b9fd6f62eec3f966928b3ab01550e2a076195d48bbe"
 
 [[files]]
 path = "scripts/check_repo_hygiene.py"
@@ -872,9 +879,11 @@ sha256 = "764494a34a82163d5a6086eef643d65b58d6eede2561b6bddf6e1e08c61c78c7"
 path = "scripts/sync.py"
 sha256 = "eab028694420f9dc536717b8f8f34b77b3fc0d033f6230c23b10c405df311333"
 
-[[files]]
-path = "scripts/repo_state.py"
-sha256 = "a10930278c6e4bf6b89e190e5b60057eaae793dfbdc2aa4eaa964adcd5d771f1"
+[[adapted]]
+path = "scripts/sync.py"
+reason = "a pull that rewrote mise.toml re-trusts it through worktree's _trust and the founding gate, or sync fails naming the refusal, since paranoid mode binds trust to a config's content (A.126)"
+patch = "contracts/vendor-patches/scripts/sync.py.patch"
+sha256 = "0ae2c795c14a56645e4c224cabd1814791395905df646d5b6683f71502517dda"
 
 [[files]]
 path = "scripts/repo_report.py"
@@ -889,10 +898,6 @@ path = "tests/test_sync_branches.py"
 sha256 = "331a4d2077e1081f81fda6b42259ded0296761e061097d4e6bbbec23999fdb21"
 
 [[files]]
-path = "tests/test_repo_state.py"
-sha256 = "88664542556050e3cbea3e0aacdfa669bae9fa0e9e73669111fe3cca75215a40"
-
-[[files]]
 path = "tests/test_repo_state_task.py"
 sha256 = "7102a6b8d97bb19b947f095b531805f755231e2a1bece497e08b3a53baac4067"
 
@@ -903,6 +908,12 @@ sha256 = "b4acc2fcce36ac4321b7ae2b8b0d3b94391b1b9f3745896f5d3ab31cdc8580a3"
 [[files]]
 path = "scripts/repo_history.py"
 sha256 = "65d7c05962af709e9e45397fe2af652782d5979050706eb74f273ea0c5859307"
+
+[[adapted]]
+path = "scripts/repo_history.py"
+reason = "--repository reads a clone upstream:checkout made under .artifacts/upstream, and nothing else outside this checkout, so another repository's history is read through a recorded task (A.135)"
+patch = "contracts/vendor-patches/scripts/repo_history.py.patch"
+sha256 = "63e49b62efac30d523c051f5c7e240539e01eb9fb89dc34e8383b0dc02f16c2b"
 
 [[files]]
 path = "scripts/source_restore.py"
@@ -952,9 +963,9 @@ sha256 = "83f723e72a23bb4a4783e7354bd4101b3c8284e5fb6e225d4266d69f41e0989f"
 
 [[adapted]]
 path = "contracts/project-identity.toml"
-reason = "this repository's own identity and repository, with one slot in pyproject.toml; exempt adds bootstrap/, the ledger anchor and contracts/vendor-patches/, whose diffs quote identity lines verbatim, and the coursework paths are dropped (A.121)"
+reason = "this repository's own identity and repository, with slots in pyproject.toml and in uv.lock's root package line, so a generated project's lock takes its name with its identity (A.129); exempt adds bootstrap/, the ledger anchor and contracts/vendor-patches/, whose diffs quote identity lines verbatim, and the coursework paths are dropped (A.121)"
 patch = "contracts/vendor-patches/contracts/project-identity.toml.patch"
-sha256 = "373b4ceb1a61f0f0aa107341c93d3b9d60148f9cdd6377b4313d11a2156d72cc"
+sha256 = "861240f18e56b3df0e37983877c1889260b3e01c3e1f7a431aa302d5b45617a1"
 
 [[files]]
 path = "scripts/project_identity.py"
@@ -962,9 +973,9 @@ sha256 = "a7444ad736650f3e27e7a9a9223b870e1fa2d1629304e4992b19594d080eefb8"
 
 [[adapted]]
 path = "scripts/project_identity.py"
-reason = "identity keeps name and repository: the seven Databricks values are withdrawn from the model and from _values, as the founding withdrew Databricks (A.121)"
+reason = "identity keeps name and repository: the seven Databricks values are withdrawn from the model and from _values, as the founding withdrew Databricks (A.121); a refused spec names every validation error by its field, never the error's count line alone (A.130)"
 patch = "contracts/vendor-patches/scripts/project_identity.py.patch"
-sha256 = "fabc6c554ffa581df190c147c38ef492b6ad3012a13b1be944b2b71983667aad"
+sha256 = "91d9b35565b64ee8157a5889d16155677ddbfff8f2f68bf54349967f559c8bcb"
 
 [[files]]
 path = "scripts/template_new.py"
@@ -983,6 +994,12 @@ sha256 = "792edf3c8298efa540846241f993b7e73ed30614dcd20967f0e2338211a56867"
 [[files]]
 path = "scripts/template_identity.py"
 sha256 = "38fa77e4d0809facd60750e29127df670fe4e9ecca2108d26fc94a02c978af5d"
+
+[[adapted]]
+path = "scripts/template_identity.py"
+reason = "a refused spec names every validation error by its field, through project_identity's refusal_reason, never the error's count line alone (A.130)"
+patch = "contracts/vendor-patches/scripts/template_identity.py.patch"
+sha256 = "a1dce649c445706dd3ec716ff2b7955063838ae5d81af870901dc70fe92d1c8a"
 
 [[files]]
 path = "scripts/template_publish.py"
@@ -1263,3 +1280,43 @@ commit = "58af9d32a9972d6abb5a18acd94ee1235843da66"
 paths = 492
 sha256 = "3fc90cf97b28133d551b8313b214189f404dcba19c87cf3dd53dbc042d44c810"
 note = "every path here is in [[files]] or [[withdrawn]]; tests/test_provenance.py proves it (A.13)"
+
+[[files]]
+path = "scripts/repo_state.py"
+sha256 = "3e75a456c9db060822e1200ae6694874473122a6585736fbcb3e3245b1faf0e5"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "tests/test_repo_state.py"
+sha256 = "88664542556050e3cbea3e0aacdfa669bae9fa0e9e73669111fe3cca75215a40"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "scripts/branches_prune.py"
+sha256 = "1c81b636160d0575e01b4cc1a95896eba055c81abcd6547a08d641d40974db74"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "policies/runs/branches_prune/branches_prune.rego"
+sha256 = "04c8d56523dfd825aff21dc088d6d9d1a8dc29c94721efb39d99d24fafe24370"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "tests/test_branches_prune.py"
+sha256 = "57f800e5d4e382d3c31e82fb2066f8fbbfc8f1ebc1c2d7eca2a6002d214b49df"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "scripts/branches_retire.py"
+sha256 = "79b77100d01c0960451cac6770bab30543c7fe2585d6e339530572db220d40af"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "policies/runs/branches_retire/branches_retire.rego"
+sha256 = "9a0fe7be86242f93e1b02abd3ab51fcfa488b0521fa2dae7e667f536800abbb6"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"
+
+[[files]]
+path = "tests/test_branches_retire.py"
+sha256 = "20eb17b9db3e196d2af64f61ca357dde5120d354745fa9895cc6e11c5630f0c0"
+commit = "25061c1d2517dce66493fdb13a89d1d5b3ea9030"

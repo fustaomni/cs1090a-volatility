@@ -76,6 +76,12 @@ implementation = "mise.toml"
 emits = "text"
 
 [[capabilities]]
+task = "start:switch"
+version = "1.0.0"
+implementation = "mise.toml"
+emits = "text"
+
+[[capabilities]]
 task = "plan:trace"
 version = "1.0.0"
 implementation = "scripts/plan_files.py"
@@ -451,4 +457,22 @@ emits = "command-outcome/v1"
 task = "template:discard"
 version = "1.0.0"
 implementation = "scripts/template_discard.py"
+emits = "command-outcome/v1"
+
+[[capabilities]]
+task = "template:update"
+version = "1.0.0"
+implementation = "scripts/template_update.py"
+emits = "command-outcome/v1"
+
+[[capabilities]]
+task = "branches:prune"
+version = "1.0.0"
+implementation = "scripts/branches_prune.py"
+emits = "command-outcome/v1"
+
+[[capabilities]]
+task = "branches:retire"
+version = "1.0.0"
+implementation = "scripts/branches_retire.py"
 emits = "command-outcome/v1"
